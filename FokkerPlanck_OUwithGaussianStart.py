@@ -181,9 +181,9 @@ model = DGM.DGMNet(nodes_per_layer, num_layers, 1)
 
 # tensor placeholders (_tnsr suffix indicates tensors)
 # inputs (time, space domain interior, space domain at initial time)
-t_tnsr = tf.placeholder(tf.float32, [None,1])
-x_interior_tnsr = tf.placeholder(tf.float32, [None,1])
-x_initial_tnsr = tf.placeholder(tf.float32, [None,1])
+t_tnsr = tf.compat.v1.placeholder(tf.float32, [None,1])
+x_interior_tnsr = tf.compat.v1.placeholder(tf.float32, [None,1])
+x_initial_tnsr = tf.compat.v1.placeholder(tf.float32, [None,1])
 
 # loss 
 L1_tnsr, L3_tnsr = loss(model, t_tnsr, x_interior_tnsr, x_initial_tnsr, nSim_t, alpha, beta)
@@ -194,13 +194,13 @@ u = model(t_tnsr, x_interior_tnsr)
 p_unnorm = tf.exp(-u)
 
 # set optimizer
-optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(loss_tnsr)
+optimizer = tf.compat.v1.train.AdamOptimizer(learning_rate=learning_rate).minimize(loss_tnsr)
 
 # initialize variables
-init_op = tf.global_variables_initializer()
+init_op = tf.compat.v1.global_variables_initializer()
 
 # open session
-sess = tf.Session()
+sess = tf.compat.v1.Session()
 sess.run(init_op)
 
 #%% Train network
@@ -219,7 +219,7 @@ for i in range(sampling_stages):
 
 # save outout
 if saveOutput:
-    saver = tf.train.Saver()
+    saver = tf.compat.v1.train.Saver()
     saver.save(sess, './SavedNets/' + saveName)
 
 #%% Plot results

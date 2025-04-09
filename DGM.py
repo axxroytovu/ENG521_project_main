@@ -43,23 +43,23 @@ class LSTMLayer(tf.keras.layers.Layer):
         ### define LSTM layer parameters (use Xavier initialization)
         # u vectors (weighting vectors for inputs original inputs x)
         self.Uz = self.add_variable("Uz", shape=[self.input_dim, self.output_dim],
-                                    initializer = tf.contrib.layers.xavier_initializer())
+                                    initializer = tf.compat.v1.keras.initializers.VarianceScaling(scale=1.0, mode="fan_avg", distribution="uniform"))
         self.Ug = self.add_variable("Ug", shape=[self.input_dim ,self.output_dim],
-                                    initializer = tf.contrib.layers.xavier_initializer())
+                                    initializer = tf.compat.v1.keras.initializers.VarianceScaling(scale=1.0, mode="fan_avg", distribution="uniform"))
         self.Ur = self.add_variable("Ur", shape=[self.input_dim, self.output_dim],
-                                    initializer = tf.contrib.layers.xavier_initializer())
+                                    initializer = tf.compat.v1.keras.initializers.VarianceScaling(scale=1.0, mode="fan_avg", distribution="uniform"))
         self.Uh = self.add_variable("Uh", shape=[self.input_dim, self.output_dim],
-                                    initializer = tf.contrib.layers.xavier_initializer())
+                                    initializer = tf.compat.v1.keras.initializers.VarianceScaling(scale=1.0, mode="fan_avg", distribution="uniform"))
         
         # w vectors (weighting vectors for output of previous layer)        
         self.Wz = self.add_variable("Wz", shape=[self.output_dim, self.output_dim],
-                                    initializer = tf.contrib.layers.xavier_initializer())
+                                    initializer = tf.compat.v1.keras.initializers.VarianceScaling(scale=1.0, mode="fan_avg", distribution="uniform"))
         self.Wg = self.add_variable("Wg", shape=[self.output_dim, self.output_dim],
-                                    initializer = tf.contrib.layers.xavier_initializer())
+                                    initializer = tf.compat.v1.keras.initializers.VarianceScaling(scale=1.0, mode="fan_avg", distribution="uniform"))
         self.Wr = self.add_variable("Wr", shape=[self.output_dim, self.output_dim],
-                                    initializer = tf.contrib.layers.xavier_initializer())
+                                    initializer = tf.compat.v1.keras.initializers.VarianceScaling(scale=1.0, mode="fan_avg", distribution="uniform"))
         self.Wh = self.add_variable("Wh", shape=[self.output_dim, self.output_dim],
-                                    initializer = tf.contrib.layers.xavier_initializer())
+                                    initializer = tf.compat.v1.keras.initializers.VarianceScaling(scale=1.0, mode="fan_avg", distribution="uniform"))
         
         # bias vectors
         self.bz = self.add_variable("bz", shape=[1, self.output_dim])
@@ -115,7 +115,7 @@ class DenseLayer(tf.keras.layers.Layer):
         ### define dense layer parameters (use Xavier initialization)
         # w vectors (weighting vectors for output of previous layer)
         self.W = self.add_variable("W", shape=[self.input_dim, self.output_dim],
-                                   initializer = tf.contrib.layers.xavier_initializer())
+                                   initializer = tf.compat.v1.keras.initializers.VarianceScaling(scale=1.0, mode="fan_avg", distribution="uniform"))
         
         # bias vectors
         self.b = self.add_variable("b", shape=[1, self.output_dim])
