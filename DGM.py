@@ -3,6 +3,8 @@
 #%% import needed packages
 import tensorflow as tf
 
+tf.compat.v1.disable_eager_execution()
+
 #%% LSTM-like layer used in DGM (see Figure 5.3 and set of equations on p. 45) - modification of Keras layer class
 
 class LSTMLayer(tf.keras.layers.Layer):
