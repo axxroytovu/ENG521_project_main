@@ -46,7 +46,7 @@ n_plot = 100  # Points on plot grid for each dimension
 saveOutput = False
 saveName   = 'BlackScholes_AmericanPut'
 saveFigure = True
-figureName = 'BlackScholes_AmericanPut.png'
+figureName = 'BlackScholes_AmericanPut'
 
 #%% Black-Scholes American put price
 
@@ -248,8 +248,8 @@ if saveOutput:
 #%% Plot results
 
 # LaTeX rendering for text in plots
-#plt.rc('text', usetex=True)
-#plt.rc('font', family='serif')
+# plt.rc('text', usetex=True)
+# plt.rc('font', family='serif')
 
 # figure options
 plt.figure()
@@ -301,7 +301,7 @@ for i, curr_t in enumerate(valueTimes):
 plt.subplots_adjust(wspace=0.3, hspace=0.4)
 
 if saveFigure:
-    plt.savefig(figureName)
+    plt.savefig(figureName + 'png')
     
 #%% Exercise boundary heatmap plot 
 # vector of t and S values for plotting

@@ -44,7 +44,7 @@ n_plot = 41  # Points on plot grid for each dimension
 # Save options
 saveOutput = False
 saveName   = 'MertonProblem'
-saveFigure = False
+saveFigure = True
 figureName = 'MertonProblem'
 
 #%% Analytical Solution
@@ -214,8 +214,8 @@ if saveOutput:
 #%% Plot value function results
 
 # LaTeX rendering for text in plots
-plt.rc('text', usetex=True)
-plt.rc('font', family='serif')
+# plt.rc('text', usetex=True)
+# plt.rc('font', family='serif')
 
 # figure options
 plt.figure()
@@ -247,7 +247,7 @@ for i, curr_t in enumerate(valueTimes):
     plt.xlim(xmin=0.0, xmax=X_high)
     plt.xlabel(r"Wealth", fontsize=15, labelpad=10)
     plt.ylabel(r"Value Function", fontsize=15, labelpad=20)
-    plt.title(r"\boldmath{$t$}\textbf{ = %.2f}"%(curr_t), fontsize=18, y=1.03)
+    plt.title(r"$t$ = %.2f"%(curr_t), fontsize=18, y=1.03)
     plt.xticks(fontsize=13)
     plt.yticks(fontsize=13)
     plt.grid(linestyle=':')
@@ -295,7 +295,7 @@ for i, curr_t in enumerate(valueTimes):
     plt.ylim(ymin=2.0, ymax=3.5)
     plt.xlabel(r"Wealth", fontsize=15, labelpad=10)
     plt.ylabel(r"Value Function", fontsize=15, labelpad=20)
-    plt.title(r"\boldmath{$t$}\textbf{ = %.2f}"%(curr_t), fontsize=18, y=1.03)
+    plt.title(r"$t$ = %.2f"%(curr_t), fontsize=18, y=1.03)
     plt.xticks(fontsize=13)
     plt.yticks(fontsize=13)
     plt.grid(linestyle=':')

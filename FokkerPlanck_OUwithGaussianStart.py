@@ -47,7 +47,7 @@ nSim_x_initial = 50
 # Save options
 saveOutput = False
 saveName   = 'FokkerPlanck'
-saveFigure = False
+saveFigure = True
 figureName = 'fokkerPlanck_density.png'
 
 #%% OU Simulation function
@@ -225,8 +225,8 @@ if saveOutput:
 #%% Plot results
 
 # LaTeX rendering for text in plots
-plt.rc('text', usetex=True)
-plt.rc('font', family='serif')
+# plt.rc('text', usetex=True)
+# plt.rc('font', family='serif')
 
 # figure options
 plt.figure()
@@ -252,14 +252,14 @@ for i, curr_t in enumerate(densityTimes):
     density = unnorm_dens[0] / sp.integrate.simps(unnorm_dens[0].reshape(x_plot.shape), x_plot)
     
     # plot histogram of simulated process values and overlay estimated density
-    plt.hist(sim_x, bins=40, normed=True, color = 'b')
+    plt.hist(sim_x, bins=40, color = 'b')
     plt.plot(x_plot, density, 'r', linewidth=2.5)
     
     # subplot options
     plt.ylim(ymin=0.0, ymax=0.45)
     plt.xlabel(r"$x$", fontsize=15, labelpad=10)
     plt.ylabel(r"$p(t,x)$", fontsize=15, labelpad=20)
-    plt.title(r"\boldmath{$t$}\textbf{ = %.2f}"%(curr_t), fontsize=18, y=1.03)
+    plt.title(r"$t$ = %.2f"%(curr_t), fontsize=18, y=1.03)
     plt.xticks(fontsize=13)
     plt.yticks(fontsize=13)
     
