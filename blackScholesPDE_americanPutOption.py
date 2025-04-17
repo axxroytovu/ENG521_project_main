@@ -45,7 +45,7 @@ n_plot = 100  # Points on plot grid for each dimension
 # Save options
 saveOutput = False
 saveName   = 'BlackScholes_AmericanPut'
-saveFigure = False
+saveFigure = True
 figureName = 'BlackScholes_AmericanPut.png'
 
 #%% Black-Scholes American put price
@@ -248,8 +248,8 @@ if saveOutput:
 #%% Plot results
 
 # LaTeX rendering for text in plots
-plt.rc('text', usetex=True)
-plt.rc('font', family='serif')
+#plt.rc('text', usetex=True)
+#plt.rc('font', family='serif')
 
 # figure options
 plt.figure()
@@ -289,7 +289,7 @@ for i, curr_t in enumerate(valueTimes):
     plt.xlim(xmin=0.0, xmax=S_high)
     plt.xlabel(r"Spot Price", fontsize=15, labelpad=10)
     plt.ylabel(r"Option Price", fontsize=15, labelpad=20)
-    plt.title(r"\boldmath{$t$}\textbf{ = %.2f}"%(curr_t), fontsize=18, y=1.03)
+    plt.title(r"$t$ = %.2f"%(curr_t), fontsize=18, y=1.03)
     plt.xticks(fontsize=13)
     plt.yticks(fontsize=13)
     plt.grid(linestyle=':')
@@ -341,4 +341,4 @@ plt.xticks(fontsize=14)
 plt.yticks(fontsize=14)
 
 if saveFigure:
-    plt.savefig(figureName + '_exerciseBoundary')
+    plt.savefig(figureName + '_exerciseBoundary.png')
