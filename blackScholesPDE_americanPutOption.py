@@ -45,8 +45,8 @@ n_plot = 100  # Points on plot grid for each dimension
 # Save options
 saveOutput = False
 saveName   = 'BlackScholes_AmericanPut'
-saveFigure = False
-figureName = 'BlackScholes_AmericanPut.png'
+saveFigure = True
+figureName = 'BlackScholes_AmericanPut'
 
 #%% Black-Scholes American put price
 
@@ -205,10 +205,10 @@ model = DGM.DGMNet(nodes_per_layer, num_layers, 1)
 
 # tensor placeholders (_tnsr suffix indicates tensors)
 # inputs (time, space domain interior, space domain at initial time)
-t_interior_tnsr = tf.placeholder(tf.float32, [None,1])
-S_interior_tnsr = tf.placeholder(tf.float32, [None,1])
-t_terminal_tnsr = tf.placeholder(tf.float32, [None,1])
-S_terminal_tnsr = tf.placeholder(tf.float32, [None,1])
+t_interior_tnsr = tf.compat.v1.placeholder(tf.float32, [None,1])
+S_interior_tnsr = tf.compat.v1.placeholder(tf.float32, [None,1])
+t_terminal_tnsr = tf.compat.v1.placeholder(tf.float32, [None,1])
+S_terminal_tnsr = tf.compat.v1.placeholder(tf.float32, [None,1])
 
 # loss 
 L1_tnsr, L2_tnsr, L3_tnsr, L4_tnsr = loss(model, t_interior_tnsr, S_interior_tnsr, t_terminal_tnsr, S_terminal_tnsr)
@@ -218,13 +218,13 @@ loss_tnsr = L1_tnsr + L2_tnsr + L3_tnsr + L4_tnsr
 V = model(t_interior_tnsr, S_interior_tnsr)
 
 # set optimizer
-optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(loss_tnsr)
+optimizer = tf.compat.v1.train.AdamOptimizer(learning_rate=learning_rate).minimize(loss_tnsr)
 
 # initialize variables
-init_op = tf.global_variables_initializer()
+init_op = tf.compat.v1.global_variables_initializer()
 
 # open session
-sess = tf.Session()
+sess = tf.compat.v1.Session()
 sess.run(init_op)
 
 #%% Train network
@@ -242,14 +242,14 @@ for i in range(sampling_stages):
 
 # save outout
 if saveOutput:
-    saver = tf.train.Saver()
+    saver = tf.compat.v1.train.Saver()
     saver.save(sess, './SavedNets/' + saveName)
 
 #%% Plot results
 
 # LaTeX rendering for text in plots
-plt.rc('text', usetex=True)
-plt.rc('font', family='serif')
+# plt.rc('text', usetex=True)
+# plt.rc('font', family='serif')
 
 # figure options
 plt.figure()
@@ -289,7 +289,7 @@ for i, curr_t in enumerate(valueTimes):
     plt.xlim(xmin=0.0, xmax=S_high)
     plt.xlabel(r"Spot Price", fontsize=15, labelpad=10)
     plt.ylabel(r"Option Price", fontsize=15, labelpad=20)
-    plt.title(r"\boldmath{$t$}\textbf{ = %.2f}"%(curr_t), fontsize=18, y=1.03)
+    plt.title(r"$t$ = %.2f"%(curr_t), fontsize=18, y=1.03)
     plt.xticks(fontsize=13)
     plt.yticks(fontsize=13)
     plt.grid(linestyle=':')
@@ -301,7 +301,7 @@ for i, curr_t in enumerate(valueTimes):
 plt.subplots_adjust(wspace=0.3, hspace=0.4)
 
 if saveFigure:
-    plt.savefig(figureName)
+    plt.savefig(figureName + 'png')
     
 #%% Exercise boundary heatmap plot 
 # vector of t and S values for plotting
@@ -341,4 +341,4 @@ plt.xticks(fontsize=14)
 plt.yticks(fontsize=14)
 
 if saveFigure:
-    plt.savefig(figureName + '_exerciseBoundary')
+    plt.savefig(figureName + '_exerciseBoundary.png')
