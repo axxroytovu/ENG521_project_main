@@ -4,6 +4,7 @@ from torch.autograd import grad as autograd
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.interpolate import RegularGridInterpolator
+from abc import ABC, abstractmethod
 
 device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
 
@@ -62,15 +63,15 @@ class DGM_LSTM(nn.Module):
         self.activate1 = nn.Tanh()
         self.activate2 = nn.Tanh()
 
-        self.uz = nn.Parameter(torch.Tensor(in_dim, out_dim).random_)
-        self.ug = nn.Parameter(torch.Tensor(in_dim, out_dim).random_)
-        self.ur = nn.Parameter(torch.Tensor(in_dim, out_dim).random_)
-        self.uh = nn.Parameter(torch.Tensor(in_dim, out_dim).random_)
+        self.uz = nn.Parameter(torch.Tensor(in_dim, out_dim).random_())
+        self.ug = nn.Parameter(torch.Tensor(in_dim, out_dim).random_())
+        self.ur = nn.Parameter(torch.Tensor(in_dim, out_dim).random_())
+        self.uh = nn.Parameter(torch.Tensor(in_dim, out_dim).random_())
 
-        self.wz = nn.Parameter(torch.Tensor(out_dim, out_dim).random_)
-        self.wg = nn.Parameter(torch.Tensor(out_dim, out_dim).random_)
-        self.wr = nn.Parameter(torch.Tensor(out_dim, out_dim).random_)
-        self.wh = nn.Parameter(torch.Tensor(out_dim, out_dim).random_)
+        self.wz = nn.Parameter(torch.Tensor(out_dim, out_dim).random_())
+        self.wg = nn.Parameter(torch.Tensor(out_dim, out_dim).random_())
+        self.wr = nn.Parameter(torch.Tensor(out_dim, out_dim).random_())
+        self.wh = nn.Parameter(torch.Tensor(out_dim, out_dim).random_())
 
         self.bz = nn.Parameter(torch.ones(1, out_dim))
         self.bg = nn.Parameter(torch.ones(1, out_dim))
@@ -94,7 +95,7 @@ class DGM(nn.Module):
         self.loss = loss
         self.first = nn.Sequential(nn.Linear(in_dim, layer_size), nn.ReLU())
         self.layers = [
-            nn.LSTM(layer_size + in_dim, layer_size, bias=True) for _ in range(layer_count)
+            DGM_LSTM(in_dim, layer_size) for _ in range(layer_count)
         ]
         self.out = nn.Linear(layer_size, out_dim)
 
@@ -126,3 +127,8 @@ class DGM(nn.Module):
         self.eval()
         out = self.forward(numpy_to_tensor(x))
         return out.detach().cpu().numpy()
+
+class LOSS(ABC):
+    @abstractmethod
+    def __call__(self, target, result, model) -> torch.Tensor:
+        return torch.Tensor([0])
