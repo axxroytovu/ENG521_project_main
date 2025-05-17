@@ -23,9 +23,9 @@ u[0, :] = 100 # bottom side of the plate is 100 degrees
 # u[:, 0] = 100 # left side of the plate is 100 degrees
 # u[:, -1] = 100 # right side of the plate is 100 degrees
 
-fig, axis = plt.subplots()
-pcm = axis.pcolormesh(u, cmap='gist_rainbow', vmin=0, vmax=100)
-plt.colorbar(pcm, ax=axis)
+# fig, axis = plt.subplots()
+# pcm = axis.pcolormesh(u, cmap='gist_rainbow', vmin=0, vmax=100)
+# plt.colorbar(pcm, ax=axis)
 
 counter = 0
 while counter < time:
@@ -40,9 +40,9 @@ while counter < time:
 
     counter += dt
 
-    pcm.set_array(u)
-    plt.pause(0.01)
-    axis.set_title(f't: {counter:.3f} s')
+    # pcm.set_array(u)
+    # plt.pause(0.01)
+    # axis.set_title(f't: {counter:.3f} s')
     print(f't: {counter:.3f} s, Ave temp: {np.mean(u):.2f} C')
 
-plt.show()
+# plt.show()
