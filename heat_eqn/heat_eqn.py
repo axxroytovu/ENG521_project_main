@@ -27,8 +27,10 @@ u[0, :] = 100 # bottom side of the plate is 100 degrees
 # pcm = axis.pcolormesh(u, cmap='gist_rainbow', vmin=0, vmax=100)
 # plt.colorbar(pcm, ax=axis)
 
+heat_data = np.zeros((nodes, nodes, int(time / dt) + 2))
+
 counter = 0
-while counter < time:
+while counter * dt < time:
     w = u.copy()
 
     for i in range(1, nodes - 1):
@@ -38,11 +40,13 @@ while counter < time:
 
             u[i, j] = dt * alpha * (dd_ux + dd_uy) + w[i, j]
 
-    counter += dt
+    counter += 1
+    heat_data[:, :, counter] = u.copy()
 
     # pcm.set_array(u)
     # plt.pause(0.01)
     # axis.set_title(f't: {counter:.3f} s')
-    print(f't: {counter:.3f} s, Ave temp: {np.mean(u):.2f} C')
+    print(f't: {counter * dt:.3f} s, Ave temp: {np.mean(u):.2f} C')
 
 # plt.show()
+print(heat_data.shape)
