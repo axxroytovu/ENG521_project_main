@@ -1,4 +1,4 @@
-from PINN import deep_network_core as core, utils
+from deep_learning import deep_network_core as core, utils
 import torch
 import torch.nn as nn
 from torch.autograd import grad as autograd
