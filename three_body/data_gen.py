@@ -61,8 +61,21 @@ def rk4(func, starting, delta=0.0001, steps=100000):
 
 rando = np.random.default_rng()
 
+xmin = 0.68
+xmax = 0.7
+xdelt = xmax - xmin
+ydotmin = 0.64
+ydotmax = 0.66
+ydotdelt = ydotmax-ydotmin
 
-initial = np.hstack((rando.random((1000,1)), np.zeros((1000,1)), np.zeros((1000, 1)), rando.random((1000,1))))*4-2
+x = np.linspace(xmin, xmax, 50)
+y = np.linspace(ydotmin, ydotmax, 50)
+X, Y = np.meshgrid(x, y)
+x_ = X.ravel()
+y_ = Y.ravel()
+
+initial = np.stack((x_, np.zeros(x_.shape), np.zeros(x_.shape), y_), axis=-1)
+print(initial.shape)
 t_span = (0, 10)
 
 #full = rk4(dynamics, periods)
@@ -71,12 +84,14 @@ t_span = (0, 10)
 #for i in range(3):
 #    plt.plot(full[:,i,0], full[:,i,1], label=str(i))
 #plt.plot(test[:, 0], test[:, 1], label='rk4')
-threebdfile = "3body.csv"
+threebdfile = "3bodygrid2.csv"
 with tqdm(list(enumerate(initial))) as tq: 
     for i, v in tq:
-        ivp = solve_ivp(remadedynamics, t_span, v, method='Radau', dense_output=True)
-        with open(threebdfile, 'a') as tf:
-            for _ in range(5):
-                t = rando.random()*10
-                data = ivp.sol(t)
-                tf.write(f"{v[0]},{v[3]},{t},{data[0]},{data[1]},{data[2]},{data[3]}\n")
+        try:
+            ivp = solve_ivp(remadedynamics, t_span, v, method='Radau', dense_output=True)
+            with open(threebdfile, 'a') as tf:
+                for t in np.linspace(0, 10, 101):
+                    data = ivp.sol(t)
+                    tf.write(f"{v[0]},{v[3]},{t},{data[0]},{data[1]},{data[2]},{data[3]}\n")
+        except KeyboardInterrupt:
+            pass
