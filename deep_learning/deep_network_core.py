@@ -12,7 +12,38 @@ def numpy_to_tensor(x):
     n_samples = len(x)
     return torch.from_numpy(x).to(torch.float).to(device).reshape(n_samples, -1)
 
-class PINN(nn.Module):
+class Network(nn.Module):
+    def dynamic_fit(self, X, y, lr=1e-3, epochs=1000, output=[], testing=None):
+        if not output:
+            output = [int(i) for i in np.linspace(0, epochs, 11)]
+        Xt = numpy_to_tensor(X)
+        yt = numpy_to_tensor(y)
+        optimizer = torch.optim.Adam(self.parameters(), lr=lr)
+        self.train()
+        for epoch in range(epochs):
+            optimizer.zero_grad()
+            out = self.forward(Xt)
+            loss = sum([a*b(Xt, out, yt, self) for a, b in self.loss])
+            loss.backward()
+            optimizer.step()
+            if epoch in output or epoch == epochs-1:
+                print(f"Epoch {epoch+1}/{epochs} loss: {loss.item():.2g}")
+                if testing is not None:
+                    test = self.predict(testing)
+                    self.train()
+                else:
+                    test = None
+                yield loss.item, test
+
+    def fit(self, X, y, lr=1e-3, epochs=1000):
+        return [i for i, j in self.dynamic_fit(X, y, lr, epochs)]
+
+    def predict(self, x):
+        self.eval()
+        out = self.forward(numpy_to_tensor(x))
+        return out.detach().cpu().numpy()
+
+class PINN(Network):
     def __init__(self, in_dim, out_dim, layer_size, layer_count, loss):
         super().__init__()
         self.loss = loss
@@ -24,28 +55,6 @@ class PINN(nn.Module):
     def forward(self, x):
         h = self.layers(x)
         return self.out(h)
-    
-    def fit(self, X, y, lr=1e-3, epochs=1000):
-        Xt = numpy_to_tensor(X)
-        yt = numpy_to_tensor(y)
-        optimizer = torch.optim.Adam(self.parameters(), lr=lr)
-        self.train()
-        losses = []
-        for epoch in range(epochs):
-            optimizer.zero_grad()
-            out = self.forward(Xt)
-            loss = sum([a*b(yt, out, self) for a, b in self.loss])
-            loss.backward()
-            optimizer.step()
-            losses.append(loss.item())
-            if epoch==0 or ((epoch+1) % (epochs // 10) == 0):
-                print(f"Epoch {epoch+1}/{epochs} loss: {loss.item():.2g}")
-        return losses
-
-    def predict(self, x):
-        self.eval()
-        out = self.forward(numpy_to_tensor(x))
-        return out.detach().cpu().numpy()
 
 class DGM_LSTM(nn.Module):
     def __init__(self, in_dim, out_dim):
@@ -89,7 +98,7 @@ class DGM_LSTM(nn.Module):
 
         return S_new
 
-class DGM(nn.Module):
+class DGM(Network):
     def __init__(self, in_dim, out_dim, layer_size, layer_count, loss):
         super().__init__()
         self.loss = loss
@@ -105,30 +114,8 @@ class DGM(nn.Module):
         for layer in self.layers:
             temp = layer.forward(temp, x_copy)
         return self.out(temp)
-    
-    def fit(self, X, y, lr=1e-3, epochs=1000):
-        Xt = numpy_to_tensor(X)
-        yt = numpy_to_tensor(y)
-        optimizer = torch.optim.Adam(self.parameters(), lr=lr)
-        self.train()
-        losses = []
-        for epoch in range(epochs):
-            optimizer.zero_grad()
-            out = self.forward(Xt)
-            loss = sum([a*b(yt, out, self) for a, b in self.loss])
-            loss.backward()
-            optimizer.step()
-            losses.append(loss.item())
-            if epoch==0 or ((epoch+1) % (epochs // 10) == 0):
-                print(f"Epoch {epoch+1}/{epochs} loss: {loss.item():.2g}")
-        return losses
-
-    def predict(self, x):
-        self.eval()
-        out = self.forward(numpy_to_tensor(x))
-        return out.detach().cpu().numpy()
 
 class LOSS(ABC):
     @abstractmethod
-    def __call__(self, target, result, model) -> torch.Tensor:
+    def __call__(self, input, result, target, model) -> torch.Tensor:
         return torch.Tensor([0])

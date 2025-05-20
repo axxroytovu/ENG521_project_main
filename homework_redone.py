@@ -1,4 +1,4 @@
-from PINN import deep_network_core as core, utils
+from deep_learning import deep_network_core as core, utils
 import torch
 import torch.nn as nn
 from torch.autograd import grad as autograd
@@ -11,14 +11,14 @@ class MSE_Loss(core.LOSS):
     def __init__(self):
         self.loss = nn.MSELoss()
         
-    def __call__(self, target, result, model):
+    def __call__(self, input, result, target, model):
         return self.loss(target, result)
 
 class PHYSICS_Loss(core.LOSS):
     def __init__(self, bounds):
         self.bounds = bounds
     
-    def __call__(self, target, result, model):
+    def __call__(self, input, result, target, model):
         x = torch.empty((100, 1)).uniform_(self.bounds.get('x', 'low'), self.bounds.get('x', 'high')).requires_grad_(True).to(device)
         y = torch.empty((100, 1)).uniform_(self.bounds.get('y', 'low'), self.bounds.get('y', 'high')).requires_grad_(True).to(device)
         inp = torch.cat((x, y), axis=1)
@@ -30,7 +30,7 @@ class SYMMETRY_Loss(core.LOSS):
     def __init__(self, bounds):
         self.bounds = bounds
     
-    def __call__(self, target, result, model):
+    def __call__(self, input, result, target, model):
         x = torch.empty((100, 1)).uniform_(self.bounds.get('x', 'low'), self.bounds.get('x', 'center')).requires_grad_(True).to(device)
         y = torch.empty((100, 1)).uniform_(self.bounds.get('y', 'low'), self.bounds.get('y', 'high')).requires_grad_(True).to(device)
         center = torch.tensor([self.bounds.get('x', 'center'), self.bounds.get('y', 'center')])
