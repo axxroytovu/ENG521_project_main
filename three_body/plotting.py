@@ -16,23 +16,42 @@ def remadedynamics(t, x):
     ddydt = x[1] - 2*x[2] + (mu-1)*x[1]/r13 - mu*x[1]/r23
     return np.array([dxdt, dydt, ddxdt, ddydt])
 
-
 x0test = 0.690681027
 ydottest = .659003204
 t_span = (0, 10)
 v = np.array([x0test, 0, 0, ydottest])
-ivp = solve_ivp(remadedynamics, t_span, v, method='Radau', dense_output=True)
+ivp = solve_ivp(remadedynamics, t_span, v, method='Radau', dense_output=True, rtol=1e-9, atol=1e-9)
 truth = np.array([ivp.sol(t) for t in np.linspace(0, 10, 1001)])
 
-with open("pdat.pkl", 'rb') as pfile:
+valid=[
+    (0.6906122448979591, 0.6587755102040816),
+    (0.6906122448979591, 0.6591836734693878),
+    (0.6910204081632653, 0.6587755102040816),
+    (0.6910204081632653, 0.6591836734693878)
+    ]
+
+d = {v: [] for v in valid}
+
+with open("3bodygrid3.csv", 'r') as dfile:
+    for l in dfile.readlines():
+        data = [float(x) for x in l.split(',')]
+        if (data[0], data[1]) in valid:
+            d[(data[0], data[1])].append((data[2], data[3], data[4]))
+
+for v in valid:
+    d[v] = sorted(d[v])
+
+with open("pdat1.pkl", 'rb') as pfile:
     pdata = pickle.load(pfile)
-with open("ddat.pkl", 'rb') as dfile:
+with open("ddat1.pkl", 'rb') as dfile:
     ddata = pickle.load(dfile)
 
 plt.figure()
 plt.plot(truth[:, 0], truth[:, 1], label="Truth")
 for i, x in enumerate(pdata):
     plt.plot(x[:, 0], x[:, 1], label=f"Epoch {i*1000}")
+for v in d.values():
+    plt.plot([x[1] for x in v], [x[2] for x in v], label="Data")
 plt.grid()
 plt.xlabel("x")
 plt.ylabel("y")

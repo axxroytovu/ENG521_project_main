@@ -84,11 +84,11 @@ t_span = (0, 10)
 #for i in range(3):
 #    plt.plot(full[:,i,0], full[:,i,1], label=str(i))
 #plt.plot(test[:, 0], test[:, 1], label='rk4')
-threebdfile = "3bodygrid2.csv"
+threebdfile = "3bodygrid3.csv"
 with tqdm(list(enumerate(initial))) as tq: 
     for i, v in tq:
         try:
-            ivp = solve_ivp(remadedynamics, t_span, v, method='Radau', dense_output=True)
+            ivp = solve_ivp(remadedynamics, t_span, v, method='Radau', dense_output=True, rtol=1e-9, atol=1e-9)
             with open(threebdfile, 'a') as tf:
                 for t in np.linspace(0, 10, 101):
                     data = ivp.sol(t)
