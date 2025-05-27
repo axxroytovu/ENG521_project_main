@@ -5,15 +5,28 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.interpolate import RegularGridInterpolator
 from abc import ABC, abstractmethod
+from tqdm import tqdm
 
 device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
 
 def numpy_to_tensor(x):
+    '''Utility function to convert a numpy array to a pytorch tensor'''
     n_samples = len(x)
     return torch.from_numpy(x).to(torch.float).to(device).reshape(n_samples, -1)
 
 class Network(nn.Module):
+    '''Base class for physics informed networks'''
     def dynamic_fit(self, X, y, lr=1e-3, epochs=1000, output=[], testing=None):
+        '''Overall utility to optimize the network
+
+        Inputs:
+            X: the training input data
+            y: the target data
+            lr: the learning rate for the adam optimizer
+            epochs: the number of epochs to train
+            output: specific epochs to output data
+            testing: separate data to use as a test
+        '''
         if not output:
             output = [int(i) for i in np.linspace(0, epochs, 11)]
         Xt = numpy_to_tensor(X)
