@@ -5,6 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.interpolate import RegularGridInterpolator
 from abc import ABC, abstractmethod
+from tqdm import tqdm
 
 device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
 
@@ -16,24 +17,27 @@ class Network(nn.Module):
     def dynamic_fit(self, X, y, lr=1e-3, epochs=1000, output=[], testing=None):
         if not output:
             output = [int(i) for i in np.linspace(0, epochs, 11)]
+        elif isinstance(output, int):
+            output = [int(i) for i in np.linspace(0, epochs, output)]
         Xt = numpy_to_tensor(X)
         yt = numpy_to_tensor(y)
         optimizer = torch.optim.Adam(self.parameters(), lr=lr)
         self.train()
-        for epoch in range(epochs):
-            optimizer.zero_grad()
-            out = self.forward(Xt)
-            loss = sum([a*b(Xt, out, yt, self) for a, b in self.loss])
-            loss.backward()
-            optimizer.step()
-            if epoch in output or epoch == epochs-1:
-                print(f"Epoch {epoch+1}/{epochs} loss: {loss.item():.2g}")
-                if testing is not None:
-                    test = self.predict(testing)
-                    self.train()
-                else:
-                    test = None
-                yield loss.item, test
+        with tqdm(range(epochs)) as tq:
+            for epoch in tq:
+                optimizer.zero_grad()
+                out = self.forward(Xt)
+                loss = sum([a*b(Xt, out, yt, self) for a, b in self.loss])
+                loss.backward()
+                optimizer.step()
+                tq.set_description(f"Loss: {loss.item():^10,.2g}")
+                if epoch in output or epoch == epochs-1:
+                    if testing is not None:
+                        test = self.predict(testing)
+                        self.train()
+                    else:
+                        test = None
+                    yield loss.item(), test
 
     def fit(self, X, y, lr=1e-3, epochs=1000):
         return [i for i, j in self.dynamic_fit(X, y, lr, epochs)]
@@ -42,6 +46,13 @@ class Network(nn.Module):
         self.eval()
         out = self.forward(numpy_to_tensor(x))
         return out.detach().cpu().numpy()
+
+    def derivs(self, input):
+        torch_in = numpy_to_tensor(input).requires_grad_(True)
+        output = self.forward(torch_in)
+        deriv = [autograd(output[:,i], torch_in, grad_outputs=torch.ones_like(output[:,i]), create_graph=True)[0] for i in range(output.size()[1])]
+        deriv = torch.cat(deriv, dim=1)
+        return deriv.detach().numpy()
 
 class PINN(Network):
     def __init__(self, in_dim, out_dim, layer_size, layer_count, loss):
