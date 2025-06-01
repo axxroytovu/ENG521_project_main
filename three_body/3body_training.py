@@ -106,7 +106,7 @@ v = np.array([x0, 0, 0, ydot])
 
 ivp = solve_ivp(remadedynamics, t_span, v, method='Radau', dense_output=True, rtol=1e-9, atol=1e-9)
 
-plotting = np.array([ivp.sol(t) for t in np.linspace(0, 8, 101)])
+plotting = np.array([ivp.sol(t) for t in np.linspace(0, 8, 1001)])
 data = [(t, ivp.sol(t)[:2]) for t in np.linspace(0, 8, 20)]
 
 loss1 = [(1, MSE_loss())]
@@ -127,12 +127,14 @@ dgm1_loss = []
 dgm2_pred = []
 dgm2_loss = []
 
-x_test = np.linspace(0, 10, 101).reshape((101, 1))
+x_test = np.linspace(0, 8, 101).reshape((101, 1))
+out_test = np.array([ivp.sol(t) for t in x_test[:, 0]]).reshape((101, 4))
 
 pinn1_pred.append(np.concatenate((network_pinn1.predict(x_test), network_pinn1.derivs(x_test)), axis=1))
 pinn2_pred.append(network_pinn2.predict(x_test))
 dgm1_pred.append(np.concatenate((network_dgm1.predict(x_test), network_dgm1.derivs(x_test)), axis=1))
 dgm2_pred.append(network_dgm2.predict(x_test))
+bulkloss = lambda x, y: np.mean(((x-y)**2).ravel())
 
 train_in = np.array([x[0] for x in data])
 train_out = np.array([x[1] for x in data])
@@ -140,22 +142,24 @@ train_out = np.array([x[1] for x in data])
 scale = 10000
 try:
     print(f"Training PINN1")
-    for loss, test in network_pinn1.dynamic_fit(train_in, train_out, lr=1e-4, epochs=10*scale, testing=x_test, output=100):
+    for loss, test in network_pinn1.dynamic_fit(train_in, train_out, lr=1e-4, epochs=10*scale, testing=x_test, output=1000):
         deriv = network_pinn1.derivs(x_test)
-        pinn1_loss.append(loss)
-        pinn1_pred.append(np.concatenate((test, deriv), axis=1))
+        full_out = np.concatenate((test, deriv), axis=1)
+        pinn1_loss.append(bulkloss(full_out, out_test))
+        pinn1_pred.append(full_out)
     print(f"Training PINN2")
-    for loss, test in network_pinn2.dynamic_fit(train_in, train_out, lr=1e-4, epochs=10*scale, testing=x_test, output=100):
-        pinn2_loss.append(loss)
+    for loss, test in network_pinn2.dynamic_fit(train_in, train_out, lr=1e-4, epochs=10*scale, testing=x_test, output=1000):
+        pinn2_loss.append(bulkloss(test, out_test))
         pinn2_pred.append(test)
     print(f"Training DGM1")
-    for loss, test in network_dgm1.dynamic_fit(train_in, train_out, lr=1e-4, epochs=10*scale, testing=x_test, output=100):
-        deriv = network_dgm1.derivs(x_test)
-        dgm1_loss.append(loss)
-        dgm1_pred.append(np.concatenate((test, deriv), axis=1))
+    for loss, test in network_dgm1.dynamic_fit(train_in, train_out, lr=1e-4, epochs=10*scale, testing=x_test, output=1000):
+        deriv = network_pinn1.derivs(x_test)
+        full_out = np.concatenate((test, deriv), axis=1)
+        dgm1_loss.append(bulkloss(full_out, out_test))
+        dgm1_pred.append(full_out)
     print(f"Training DGM2")
-    for loss, test in network_dgm2.dynamic_fit(train_in, train_out, lr=1e-4, epochs=10*scale, testing=x_test, output=100):
-        dgm2_loss.append(loss)
+    for loss, test in network_dgm2.dynamic_fit(train_in, train_out, lr=1e-4, epochs=10*scale, testing=x_test, output=1000):
+        dgm2_loss.append(bulkloss(test, out_test))
         dgm2_pred.append(test)
 except KeyboardInterrupt:
     pass
@@ -184,13 +188,19 @@ a1.set_ylabel("y")
 a2.set_xlabel("x'")
 a2.set_ylabel("y'")
 
+torch.save(network_pinn1, "pinn_no_physics.pt")
+torch.save(network_pinn2, "pinn_physics.pt")
+torch.save(network_dgm1, "dgm_no_physics.pt")
+torch.save(network_dgm2, "dgm_physics.pt")
+
 plt.figure()
 plt.title("Training Rate")
-plt.semilogy(pinn1_loss, label="FF No Physics", c='red')
-plt.semilogy(pinn2_loss, label="FF Physics", c='orange')
-plt.semilogy(dgm1_loss, label="DGM No Physics", c='purple')
-plt.semilogy(dgm2_loss, label="DGM Physics", c='green')
+plt.semilogy(np.linspace(0, 10*scale, len(pinn1_loss)), pinn1_loss, label="FF No Physics", c='red')
+plt.semilogy(np.linspace(0, 10*scale, len(pinn2_loss)), pinn2_loss, label="FF Physics", c='orange')
+plt.semilogy(np.linspace(0, 10*scale, len(dgm1_loss)), dgm1_loss, label="DGM No Physics", c='purple')
+plt.semilogy(np.linspace(0, 10*scale, len(dgm2_loss)), dgm2_loss, label="DGM Physics", c='green')
 plt.grid()
+plt.legend()
 plt.xlabel("epoch")
 plt.ylabel("total loss")
 

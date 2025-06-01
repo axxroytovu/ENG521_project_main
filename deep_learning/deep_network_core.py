@@ -5,6 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.interpolate import RegularGridInterpolator
 from abc import ABC, abstractmethod
+from tqdm import tqdm
 
 device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
 
