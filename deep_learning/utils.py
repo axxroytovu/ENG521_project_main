@@ -42,7 +42,7 @@ def grad(outputs, inputs):
 def laplacian(y, x):
     lap = torch.zeros_like(y)
     for xi in x:
-        dy_dxi = autograd(y, xi, torch.ones_like(y), create_graph=True, allow_unused=True)[0]
+        dy_dxi = autograd(y, xi, torch.ones_like(y), create_graph=True)[0]
         lap += autograd(dy_dxi, xi, torch.ones_like(y), create_graph=True)[0]
     return lap
 
