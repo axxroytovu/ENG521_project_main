@@ -38,14 +38,6 @@ def grad(outputs, inputs):
         create_graph=True
     )
 
-# general laplacian isn't currently working
-def laplacian(y, x):
-    lap = torch.zeros_like(y)
-    for xi in x:
-        dy_dxi = autograd(y, xi, torch.ones_like(y), create_graph=True)[0]
-        lap += autograd(dy_dxi, xi, torch.ones_like(y), create_graph=True)[0]
-    return lap
-
 def laplacian_1d(y, x):
     dy_dx = autograd(y, x, torch.ones_like(y), create_graph=True)[0]
     return autograd(dy_dx, x, torch.ones_like(dy_dx), create_graph=True)[0]
