@@ -6,7 +6,7 @@ This code package is a comparison between physics informed feed forward networks
 
 ### deep_learning
 
-The `deep_learning` folder contains the core code that generates the DGM and PINN networks. The `deep_network_core.py` file contains class definitions for the various network models, and a base class for the loss function. THe `utils.py` file contains a variety of utility functions, such as a Laplacian function and a Curl function which are often utilized as part of differential equations.
+The `deep_learning` folder contains the core code that generates the DGM and PINN networks. The `deep_network_core.py` file contains class definitions for the various network models, and a base class for the loss function. The `utils.py` file contains a variety of utility functions, such as a Laplacian function and a Curl function which are often utilized as part of differential equations.
 
 ### fluid_flow
 
