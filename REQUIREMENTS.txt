@@ -3,3 +3,5 @@ tqdm==4.67.1
 scipy==1.15.2
 numpy==2.2.5
 matplotlib==3.10.1
+tqdm==4.67.1
+cmcrameri==1.9
