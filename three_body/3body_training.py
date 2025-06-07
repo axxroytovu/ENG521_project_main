@@ -4,8 +4,10 @@ import torch.nn as nn
 from torch.autograd import grad as autograd
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib as mpl
 import pickle
 from scipy.integrate import solve_ivp
+import cmcrameri.cm as cmc
 
 device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
 
@@ -153,7 +155,7 @@ try:
         pinn2_pred.append(test)
     print(f"Training DGM1")
     for loss, test in network_dgm1.dynamic_fit(train_in, train_out, lr=1e-4, epochs=10*scale, testing=x_test, output=1000):
-        deriv = network_pinn1.derivs(x_test)
+        deriv = network_dgm1.derivs(x_test)
         full_out = np.concatenate((test, deriv), axis=1)
         dgm1_loss.append(bulkloss(full_out, out_test))
         dgm1_pred.append(full_out)
@@ -164,44 +166,49 @@ try:
 except KeyboardInterrupt:
     pass
 
-fig, (a1, a2) = plt.subplots(1, 2)
+arch_names = ['g_true', 'FF', 'PI-FF', 'DGM', 'PI-DGM']
+batlow_colors = cmc.batlow(np.linspace(0, 1, len(arch_names)))
+font = {'size'   : 10}
+
+mpl.rc('font', **font)
+fig, (a1, a2) = plt.subplots(1, 2, figsize=(7.5, 3))
 
 #plt.plot(plotting[:, 0], plotting[:, 1])
-a1.scatter([d[1][0] for d in data], [d[1][1] for d in data], marker='o', c='blue', label="Training")
-a1.plot(plotting[:, 0], plotting[:, 1], c='blue')
-a2.plot(plotting[:, 2], plotting[:, 3], c='blue', label="Truth")
-a1.plot(pinn1_pred[-1][:,0], pinn1_pred[-1][:,1], label="FF No Physics", c='red')
-a2.plot(pinn1_pred[-1][:,2], pinn1_pred[-1][:,3], label="FF No Physics", c='red')
-a1.plot(pinn2_pred[-1][:,0], pinn2_pred[-1][:,1], label="FF Physics", c='orange')
-a2.plot(pinn2_pred[-1][:,2], pinn2_pred[-1][:,3], label="FF Physics", c='orange')
-a1.plot(dgm1_pred[-1][:,0], dgm1_pred[-1][:,1], label="DGM No Physics", c='purple')
-a2.plot(dgm1_pred[-1][:,2], dgm1_pred[-1][:,3], label="DGM No Physics", c='purple')
-a1.plot(dgm2_pred[-1][:,0], dgm2_pred[-1][:,1], label="DGM Physics", c='green')
-a2.plot(dgm2_pred[-1][:,2], dgm2_pred[-1][:,3], label="DGM Physics", c='green')
+a1.scatter([d[1][0] for d in data], [d[1][1] for d in data], marker='o', color=batlow_colors[0], label="Training")
+a1.plot(plotting[:, 0], plotting[:, 1], color=batlow_colors[0], label="Truth")
+a2.plot(plotting[:, 2], plotting[:, 3], color=batlow_colors[0], label="Truth")
+a1.plot(pinn1_pred[-1][:,0], pinn1_pred[-1][:,1], label="FF No Physics", color=batlow_colors[1])
+a2.plot(pinn1_pred[-1][:,2], pinn1_pred[-1][:,3], label="FF No Physics", color=batlow_colors[1])
+a1.plot(pinn2_pred[-1][:,0], pinn2_pred[-1][:,1], label="FF Physics", color=batlow_colors[2])
+a2.plot(pinn2_pred[-1][:,2], pinn2_pred[-1][:,3], label="FF Physics", color=batlow_colors[2])
+a1.plot(dgm1_pred[-1][:,0], dgm1_pred[-1][:,1], label="DGM No Physics", color=batlow_colors[3])
+a2.plot(dgm1_pred[-1][:,2], dgm1_pred[-1][:,3], label="DGM No Physics", color=batlow_colors[3])
+a1.plot(dgm2_pred[-1][:,0], dgm2_pred[-1][:,1], label="DGM Physics", color=batlow_colors[4])
+a2.plot(dgm2_pred[-1][:,2], dgm2_pred[-1][:,3], label="DGM Physics", color=batlow_colors[4])
 #plt.plot(pinn3_pred[-1][:,0], pinn3_pred[-1][:,1], label="2nd order")
 #plt.quiver(pinn3_pred[-1][:,0], pinn3_pred[-1][:,1], pinn3_pred[-1][:,2], pinn3_pred[-1][:,3])
-plt.legend()
-a1.set_title("Position plot")
-a2.set_title("Velocity plot")
+a1.legend(loc='center left', bbox_to_anchor=(1, 0.5))
+a1.set_title("Position")
+a2.set_title("Velocity")
 a1.set_xlabel("x")
 a1.set_ylabel("y")
-a2.set_xlabel("x'")
-a2.set_ylabel("y'")
+a2.set_xlabel("u")
+a2.set_ylabel("v")
+plt.tight_layout()
 
 torch.save(network_pinn1, "pinn_no_physics.pt")
 torch.save(network_pinn2, "pinn_physics.pt")
 torch.save(network_dgm1, "dgm_no_physics.pt")
 torch.save(network_dgm2, "dgm_physics.pt")
 
-plt.figure()
-plt.title("Training Rate")
-plt.semilogy(np.linspace(0, 10*scale, len(pinn1_loss)), pinn1_loss, label="FF No Physics", c='red')
-plt.semilogy(np.linspace(0, 10*scale, len(pinn2_loss)), pinn2_loss, label="FF Physics", c='orange')
-plt.semilogy(np.linspace(0, 10*scale, len(dgm1_loss)), dgm1_loss, label="DGM No Physics", c='purple')
-plt.semilogy(np.linspace(0, 10*scale, len(dgm2_loss)), dgm2_loss, label="DGM Physics", c='green')
+plt.figure(figsize=(3.5, 3))
+plt.semilogy(np.linspace(0, 10*scale, len(pinn1_loss)), pinn1_loss, label="FF No Physics", color=batlow_colors[1])
+plt.semilogy(np.linspace(0, 10*scale, len(pinn2_loss)), pinn2_loss, label="FF Physics", color=batlow_colors[2])
+plt.semilogy(np.linspace(0, 10*scale, len(dgm1_loss)), dgm1_loss, label="DGM No Physics", color=batlow_colors[3])
+plt.semilogy(np.linspace(0, 10*scale, len(dgm2_loss)), dgm2_loss, label="DGM Physics", color=batlow_colors[4])
 plt.grid()
 plt.legend()
-plt.xlabel("epoch")
-plt.ylabel("total loss")
-
+plt.xlabel("Epoch")
+plt.ylabel("Testing Loss")
+plt.tight_layout()
 plt.show()
