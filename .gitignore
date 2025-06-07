@@ -3,3 +3,5 @@
 *.csv
 *.pkl
 *.png
+deep_learning/test.py
+*.pt

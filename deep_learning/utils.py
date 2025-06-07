@@ -37,3 +37,18 @@ def grad(outputs, inputs):
         grad_outputs=torch.ones_like(outputs),
         create_graph=True
     )
+
+def laplacian_1d(y, x):
+    dy_dx = autograd(y, x, torch.ones_like(y), create_graph=True)[0]
+    return autograd(dy_dx, x, torch.ones_like(dy_dx), create_graph=True)[0]
+
+def laplacian_2d(z, x, y):
+    lap = torch.zeros_like(z)
+    dz_dx = autograd(z, x, torch.ones_like(z), create_graph=True)[0]
+    lap += autograd(dz_dx, x, torch.ones_like(dz_dx), create_graph=True)[0]
+    dz_dy = autograd(z, y, torch.ones_like(z), create_graph=True)[0]
+    lap += autograd(dz_dy, y, torch.ones_like(dz_dy), create_graph=True)[0]
+    return lap
+
+def dy_dt(y, t):
+    return autograd(y, t, torch.ones_like(y), create_graph=True)[0]
