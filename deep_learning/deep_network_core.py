@@ -22,10 +22,10 @@ class Network(nn.Module):
         Inputs:
             X: the training input data
             y: the target data
-            lr: the learning rate for the adam optimizer
-            epochs: the number of epochs to train
-            output: specific epochs to output data
-            testing: separate data to use as a test
+            lr (default 1e-3): the learning rate for the adam optimizer
+            epochs (default 1000): the number of epochs to train
+            output (optional): specific epochs to output loss and test prediction. Can be a list of epochs or an integer count of equidistant outputs.
+            testing (optional): separate data to use as a test
         '''
         if not output:
             output = [int(i) for i in np.linspace(0, epochs, 11)]
@@ -52,14 +52,18 @@ class Network(nn.Module):
                     yield loss.item(), test
 
     def fit(self, X, y, lr=1e-3, epochs=1000):
+        '''Simplified utility function to fit the network'''
         return [i for i, j in self.dynamic_fit(X, y, lr, epochs)]
 
     def predict(self, x):
+        '''Forward prediction of the input x'''
         self.eval()
         out = self.forward(numpy_to_tensor(x))
         return out.detach().cpu().numpy()
 
     def derivs(self, input):
+        '''Utility function to calculate and return the derivatives
+        of the network at the provided input points.'''
         torch_in = numpy_to_tensor(input).requires_grad_(True)
         output = self.forward(torch_in)
         deriv = [autograd(output[:,i], torch_in, grad_outputs=torch.ones_like(output[:,i]), create_graph=True)[0] for i in range(output.size()[1])]
@@ -67,6 +71,7 @@ class Network(nn.Module):
         return deriv.detach().numpy()
 
 class PINN(Network):
+    '''Implementation of the Network base class for a Feed Forward network'''
     def __init__(self, in_dim, out_dim, layer_size, layer_count, loss):
         super().__init__()
         self.loss = loss
@@ -80,6 +85,7 @@ class PINN(Network):
         return self.out(h)
 
 class DGM_LSTM(nn.Module):
+    '''LSTM layer for use in the DGM network'''
     def __init__(self, in_dim, out_dim):
         '''
         args:
@@ -122,6 +128,7 @@ class DGM_LSTM(nn.Module):
         return S_new
 
 class DGM(Network):
+    '''Implementation of the Network base class for DGM networks'''
     def __init__(self, in_dim, out_dim, layer_size, layer_count, loss):
         super().__init__()
         self.loss = loss
@@ -139,6 +146,8 @@ class DGM(Network):
         return self.out(temp)
 
 class LOSS(ABC):
+    '''Abstract class used to implement loss functions'''
     @abstractmethod
     def __call__(self, input, result, target, model) -> torch.Tensor:
+        '''Use this function to calculate the loss object'''
         return torch.Tensor([0])
